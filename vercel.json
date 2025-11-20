@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "name": "saas-live-chat-demo",
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "client.html", "use": "@vercel/static" },
+    { "src": "support.html", "use": "@vercel/static" },
+    { "src": "styles.css", "use": "@vercel/static" },
+    { "src": "chat-core.js", "use": "@vercel/static" },
+    { "src": "client.js", "use": "@vercel/static" },
+    { "src": "support.js", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/styles.css", "dest": "/styles.css" },
+    { "src": "/chat-core.js", "dest": "/chat-core.js" },
+    { "src": "/client.js", "dest": "/client.js" },
+    { "src": "/support.js", "dest": "/support.js" },
+    { "src": "/client", "dest": "/client.html" },
+    { "src": "/support", "dest": "/support.html" }
+  ]
+}
+

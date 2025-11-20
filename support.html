@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Support · SAAS Live Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+<body>
+    <main class="support-shell">
+      <section class="auth-card" id="authCard">
+        <p class="eyebrow">Suport autenticat</p>
+        <h1>Autentificare agent</h1>
+        <p>Introduce user și parolă pentru a accesa consolele de conversații.</p>
+        <form id="authForm" autocomplete="off">
+          <label>
+            Username
+            <input type="text" id="authUser" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="authPass" required />
+          </label>
+          <button type="submit">Log in</button>
+          <p class="auth-error" id="authError" hidden>User sau parolă greșite.</p>
+        </form>
+        <small>Hint: admin / admin</small>
+      </section>
+
+      <section class="support-app" id="supportApp" hidden>
+        <aside class="conversation-panel">
+          <header>
+            <div>
+              <p class="eyebrow">Conversații active</p>
+              <h3>Queue</h3>
+            </div>
+            <span class="counter" id="conversationCount">0</span>
+          </header>
+          <div class="conversation-list" id="conversationList"></div>
+          <p class="empty" id="conversationEmpty">Încă nu avem conversații deschise.</p>
+        </aside>
+
+        <section class="chat-panel">
+          <header class="chat-header">
+            <div>
+              <p class="eyebrow">Instanță suport</p>
+              <h2>Specialist NOC</h2>
+            </div>
+            <div class="topic-meta">
+              <div class="topic-pill" id="topicPill">Așteptăm un ticket</div>
+              <div class="conversation-pill" id="conversationBadge">Fără ID</div>
+            </div>
+          </header>
+
+          <ul class="messages" id="messageList" hidden></ul>
+          <div class="empty" id="emptyState">
+            Selectează un ticket din coloana din stânga pentru a vedea istoricul.
+          </div>
+        </section>
+
+        <section class="compose-panel">
+          <header>
+            <h3>Control center</h3>
+            <p>Poți trimite un mesaj liber sau să alegi un răspuns scriptat.</p>
+          </header>
+
+          <div class="quick-buttons" id="quickButtons"></div>
+
+          <form class="composer vertical" id="supportForm" autocomplete="off">
+            <textarea
+              id="supportInput"
+              rows="4"
+              placeholder="Selectează o conversație pentru a răspunde..."
+            ></textarea>
+            <button type="submit">Trimite răspuns</button>
+          </form>
+
+          <button type="button" class="secondary-btn" id="supportReset">Curăță toate conversațiile</button>
+        </section>
+      </section>
+    </main>
+
+    <script src="chat-core.js"></script>
+    <script src="support.js"></script>
+  </body>
+</html>
+
+
