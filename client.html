@@ -12,89 +12,57 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <div class="global-bg">
-      <span class="orb orb-1"></span>
-      <span class="orb orb-2"></span>
+  <body class="app-body client-body">
+    <div class="plasma-bg">
+      <span class="plasma one"></span>
+      <span class="plasma two"></span>
+      <span class="plasma three"></span>
     </div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
       <span class="theme-icon">🌙</span>
     </button>
-    <main class="split-layout">
-      <aside class="side-panel">
+    <main class="client-grid">
+      <aside class="panel playbook-panel">
         <header>
-          <p class="eyebrow">Instanță client</p>
-          <h1>Sunt agentul tău digital</h1>
-          <p>Pasul 1: selectează problema. Pasul 2: începe discuția.</p>
+          <p class="eyebrow">Playbooks</p>
+          <h2>Selectează contextul</h2>
         </header>
-
-        <div class="side-stats">
-          <article class="side-stat">
-            <p>Live SLA</p>
-            <strong>99.95%</strong>
-            <span>status: healthy</span>
-          </article>
-          <article class="side-stat">
-            <p>Latency</p>
-            <strong>120ms</strong>
-            <span>broadcast channel</span>
-          </article>
-          <article class="side-stat">
-            <p>Conversații active</p>
-            <strong id="sideConversationCount">0</strong>
-            <span>sincronizate</span>
-          </article>
-        </div>
-
-        <div class="topic-stack">
-          <div class="topic-stack-head">
-            <p class="eyebrow">Playbook-uri</p>
-            <h3>Fluxuri recomandate</h3>
-          </div>
-          <ul class="topic-list" id="topicList"></ul>
-        </div>
-
-        <button class="ghost-btn" id="contactButton" data-topic="Contact direct">
-          Get in touch with us
-        </button>
-        <p class="side-note">
-          Poți selecta orice flux din listă sau contactează-ne direct pentru scenarii custom |
-          Rollouts, tenant moves, migrare regionale.
-        </p>
+        <ul class="topic-list" id="topicList"></ul>
+        <button class="accent-btn" id="contactButton" data-topic="Contact direct">Contact direct</button>
       </aside>
-      <section class="chat-panel">
+
+      <section class="panel chat-panel">
         <header class="chat-header">
-          <div>
-            <p class="eyebrow">Consolă client</p>
-            <h2>Admin Workspace</h2>
-          </div>
           <div class="topic-meta">
-            <div class="topic-pill" id="topicPill">Nicio problemă selectată</div>
-            <div class="conversation-pill" id="conversationTag">ID disponibil după primul mesaj</div>
+            <span class="topic-pill" id="topicPill">Nicio problemă selectată</span>
+            <span class="conversation-pill" id="conversationTag">ID disponibil după primul mesaj</span>
+          </div>
+          <div class="status-pill-group">
+            <span class="status-pill online">Live</span>
+            <span class="status-pill sync">Sync activ</span>
+            <span class="status-pill waiting">Selectează flux</span>
           </div>
         </header>
-        <div class="status-pill-group">
-          <span class="status-pill online">Client online</span>
-          <span class="status-pill sync">Broadcast sincron</span>
-          <span class="status-pill waiting">Selectează playbook</span>
-        </div>
+
         <div class="conversation-alert" id="conversationAlert" hidden></div>
 
-        <ul class="messages" id="messageList" hidden></ul>
-        <div class="typing-ribbon" id="typingIndicator" hidden>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <p>Suportul tastează...</p>
-        </div>
-        <div class="empty" id="emptyState">
-          <strong>Pasul 1:</strong> alege un articol din panoul din stânga.
+        <div class="chat-stage">
+          <ul class="messages" id="messageList" hidden></ul>
+          <div class="typing-ribbon" id="typingIndicator" hidden>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <p>Suportul tastează...</p>
+          </div>
+          <div class="empty" id="emptyState">
+            Selectează un playbook din stânga pentru a începe conversația.
+          </div>
         </div>
 
         <form class="composer" id="clientForm" autocomplete="off">
           <textarea
             id="clientInput"
-            placeholder="Descrie ce observi sau ce trebuie să se întâmple..."
+            placeholder="Scrie mesajul..."
             rows="3"
             disabled
           ></textarea>
@@ -106,10 +74,10 @@
         </form>
       </section>
 
-      <aside class="client-meta">
+      <aside class="panel client-meta">
         <div class="mini-kpi-grid">
           <article class="mini-kpi">
-            <p>SLAs respectate</p>
+            <p>SLAs</p>
             <strong>99.95%</strong>
             <span>ultimele 30 zile</span>
           </article>
@@ -119,28 +87,18 @@
             <span>medie live</span>
           </article>
           <article class="mini-kpi">
-            <p>Feedback clienți</p>
-            <strong>4.92★</strong>
-            <span>score ultimele 20</span>
+            <p>Feedback</p>
+            <strong>4.9★</strong>
+            <span>ultimele sesiuni</span>
           </article>
-        </div>
-
-        <div class="insight-card">
-          <p class="eyebrow">Hints</p>
-          <ul class="insight-list">
-            <li>Rulează client + suport în paralel pentru demo complet.</li>
-            <li>„Get in touch” deschide un canal dedicat exec team.</li>
-            <li>Arhivele rămân vizibile local până la refresh.</li>
-          </ul>
         </div>
 
         <div class="guidance-card floating">
           <p>
             Deschide și
             <a href="support.html" target="_blank" rel="noreferrer noopener">instanța de suport</a>
-            pentru a urmări răspunsurile live și KPIs actualizați.
+            pentru oglindă completă.
           </p>
-          <span>Tip: rulează ferestrele alăturate pentru demo complet.</span>
         </div>
       </aside>
     </main>

@@ -587,7 +587,7 @@ a {
 }
 
 .support-grid {
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr) 260px;
 }
 
 .support-shell {
@@ -650,9 +650,10 @@ a {
   margin: 0;
 }
 
-.support-app {
+.support-app,
+.support-grid {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr) 280px;
+  grid-template-columns: 240px minmax(0, 1fr) 260px;
   gap: 24px;
   align-items: stretch;
 }
@@ -827,58 +828,53 @@ a {
 
 .topic-list {
   list-style: none;
-  margin: 24px 0;
+  margin: 16px 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.topic-btn,
-.ghost-btn {
+.topic-btn {
   width: 100%;
-  border-radius: 14px;
+  border-radius: 18px;
   border: 1px solid var(--border);
-  background: var(--card-soft);
-  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 14px 16px;
   text-align: left;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: border 0.2s ease, background 0.2s ease;
+  transition: transform 0.25s ease, border 0.25s ease, background 0.25s ease;
 }
 
-.topic-btn span {
-  display: block;
-}
-
-.topic-btn small {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 400;
-}
-
-.topic-btn:hover,
-.ghost-btn:hover {
-  border-color: var(--primary);
-}
-
-.topic-btn.active,
-.ghost-btn.active {
+.topic-btn:hover {
+  transform: translateX(3px);
   border-color: var(--primary);
   background: rgba(37, 99, 235, 0.08);
-  color: var(--primary-dark);
 }
 
-.ghost-btn {
-  border-style: dashed;
-  background: transparent;
+.topic-btn.active {
+  border-color: var(--primary);
+  background: linear-gradient(120deg, rgba(37, 99, 235, 0.15), rgba(14, 165, 233, 0.15));
+  color: var(--primary-dark);
 }
 
 .chat-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.chat-stage {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 20px;
+  background: var(--card);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .chat-header {
@@ -1054,6 +1050,18 @@ a {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(40px, -20px, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(-30px, 30px, 0) scale(0.9);
   }
 }
 
@@ -1254,16 +1262,83 @@ a {
   line-height: 1;
 }
 
+.plasma-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.plasma {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: orbit 16s infinite alternate;
+}
+
+.plasma.one {
+  background: rgba(59, 130, 246, 0.5);
+  top: 5%;
+  left: 10%;
+}
+
+.plasma.two {
+  background: rgba(45, 212, 191, 0.35);
+  bottom: 15%;
+  right: 5%;
+  animation-duration: 18s;
+}
+
+.plasma.three {
+  background: rgba(147, 51, 234, 0.3);
+  bottom: 0;
+  left: 40%;
+  animation-duration: 20s;
+}
+
+.panel {
+  border-radius: 28px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 20px 60px var(--shadow);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.client-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 260px;
+  gap: 24px;
+  padding: 32px 24px 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.playbook-panel header h2 {
+  margin: 4px 0 0;
+}
+
 @media (max-width: 960px) {
   .split-layout,
-  .support-app {
+  .support-app,
+  .support-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 600px) {
   .split-layout,
-  .support-app {
+  .support-app,
+  .support-grid {
     padding: 16px;
   }
   .composer-controls {

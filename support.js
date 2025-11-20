@@ -65,6 +65,8 @@
 
     renderQuickReplies();
     rebuildConversations(ChatChannel.getHistory());
+    updateSupportStatus(false);
+    updateQueueStatus(null);
 
     ChatChannel.connect({ role: 'support' });
 

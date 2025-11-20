@@ -240,7 +240,7 @@
 
   function updateWaitingPill() {
     if (!waitingPill) return;
-    waitingPill.textContent = currentTopic ? 'Playbook selectat' : 'Selectează playbook';
+    waitingPill.textContent = currentTopic ? 'Flux selectat' : 'Selectează flux';
   }
 
   function buildMessage(role, text, topic, conversationId) {
@@ -290,7 +290,7 @@
       const button = document.createElement('button');
       button.className = 'topic-btn';
       button.dataset.topic = article.topic;
-      button.innerHTML = `<span>${article.title}</span><small>${article.subtitle}</small>`;
+      button.textContent = article.title;
       button.addEventListener('click', () => setTopic(article.topic));
       item.appendChild(button);
       topicList.appendChild(item);
