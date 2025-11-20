@@ -21,6 +21,8 @@
   const kpiPending = document.getElementById('kpiPending');
   const kpiAuto = document.getElementById('kpiAuto');
   const typingBanner = document.getElementById('supportTyping');
+  const supportStatusPill = document.getElementById('supportStatus');
+  const queueStatusPill = document.getElementById('queueStatus');
   let autoReplies = 0;
   updateHeroStats([], 0);
 
@@ -83,6 +85,12 @@
           hideTypingBanner();
         }
       }
+      if (event.type === 'connected') {
+        updateSupportStatus(true);
+      }
+      if (event.type === 'disconnected') {
+        updateSupportStatus(false);
+      }
     });
 
     supportForm.addEventListener('submit', (event) => {
@@ -96,7 +104,7 @@
     });
 
     supportInput.addEventListener('input', () => {
-      if (!activeConversationId) return;
+      if (!activeConversationId || supportInput.disabled) return;
       ChatChannel.sendTyping(activeConversationId);
     });
 
@@ -158,6 +166,9 @@
         (conv) => conv.lastRole === 'client' && conv.status !== 'archived'
       ).length;
       updateHeroStats(conversations, pending);
+      if (!activeConversation) {
+        updateQueueStatus(null);
+      }
     }
 
     function renderConversationsList() {
@@ -209,7 +220,7 @@
         closeBtn.innerHTML = '&times;';
         closeBtn.addEventListener('click', (event) => {
           event.stopPropagation();
-          ChatChannel.archiveConversation(conversation.id, { reason: 'Ticket arhivat de suport' });
+          archiveConversation(conversation);
         });
 
         wrapper.append(bodyBtn, closeBtn);
@@ -281,12 +292,14 @@
       if (!conversation) {
         topicPill.textContent = 'Așteptăm un ticket';
         conversationBadge.textContent = 'Fără ID';
+        updateQueueStatus(null);
         return;
       }
       topicPill.textContent = conversation.lastTopic
         ? `Context: ${conversation.lastTopic}`
         : 'Context indisponibil';
       conversationBadge.textContent = `ID #${formatConversationId(conversation.id)}`;
+      updateQueueStatus(conversation);
       if (conversation.status === 'archived') {
         toggleComposerState(false);
       }
@@ -347,6 +360,35 @@
   function hideTypingBanner() {
     if (!typingBanner) return;
     typingBanner.hidden = true;
+  }
+
+  function updateQueueStatus(conversation) {
+    if (!queueStatusPill) return;
+    if (!conversation) {
+      queueStatusPill.textContent = 'Niciun ticket selectat';
+      return;
+    }
+    queueStatusPill.textContent = `Ticket #${formatConversationId(conversation.id)}`;
+  }
+
+  function updateSupportStatus(isOnline) {
+    if (!supportStatusPill) return;
+    supportStatusPill.textContent = isOnline ? 'Conectat' : 'Deconectat';
+    supportStatusPill.classList.toggle('is-offline', !isOnline);
+  }
+
+  function archiveConversation(conversation) {
+    if (!conversation) return;
+    const reason = 'Ticket arhivat de suport';
+    const systemMessage = buildMessage(
+      'system',
+      reason,
+      conversation.lastTopic || '',
+      conversation.id
+    );
+    systemMessage.meta = { status: 'archived' };
+    ChatChannel.addMessage(systemMessage);
+    ChatChannel.archiveConversation(conversation.id, { reason });
   }
 })();
 

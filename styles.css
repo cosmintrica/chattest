@@ -435,6 +435,53 @@ a {
   color: var(--muted);
 }
 
+.client-meta {
+  border-radius: 32px;
+  border: 1px solid var(--border);
+  padding: 24px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 18px 50px var(--shadow);
+}
+
+.mini-kpi-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-kpi {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 12px;
+  background: var(--card-soft);
+}
+
+.mini-kpi p {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.mini-kpi strong {
+  display: block;
+  margin: 8px 0 2px;
+  font-size: 24px;
+}
+
+.mini-kpi span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.guidance-card.floating {
+  animation: floatIn 0.4s ease;
+}
+
 .status-pill-group {
   display: flex;
   flex-wrap: wrap;
@@ -536,7 +583,7 @@ a {
 }
 
 .split-layout {
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr) 260px;
 }
 
 .support-grid {
@@ -605,8 +652,9 @@ a {
 
 .support-app {
   display: grid;
-  grid-template-columns: 280px minmax(0, 2fr) minmax(320px, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr) 280px;
   gap: 24px;
+  align-items: stretch;
 }
 
 .conversation-panel {
@@ -642,59 +690,120 @@ a {
   overflow-y: auto;
 }
 
-.conversation-item {
-  border-radius: 16px;
+.chat-panel {
+  border-radius: 32px;
   border: 1px solid var(--border);
-  padding: 12px 14px;
-  background: var(--card-soft);
+  padding: 24px;
+  background: var(--surface);
+  box-shadow: 0 25px 70px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-body {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 20px;
+  background: var(--card);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.support-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.kpi-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conversation-item {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px var(--shadow);
+  transition: transform 0.25s ease, border 0.25s ease;
+  background: var(--card);
+}
+
+.conversation-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.conversation-item.active {
+  border-color: var(--primary);
+  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.25);
+}
+
+.conversation-item.awaiting::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-left: 3px solid var(--success);
+  pointer-events: none;
+}
+
+.conversation-item.archived {
+  opacity: 0.6;
+}
+
+.conversation-body {
+  border: none;
+  background: transparent;
   text-align: left;
-  cursor: pointer;
+  padding: 16px 48px 16px 16px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: border 0.2s ease, background 0.2s ease;
+  cursor: pointer;
 }
 
-.conversation-item .conversation-id {
+.conversation-body .conversation-id {
   font-size: 12px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.conversation-item .conversation-topic {
+.conversation-body .conversation-topic {
   font-weight: 600;
   color: var(--text);
 }
 
-.conversation-item .conversation-preview {
+.conversation-body .conversation-preview {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
 }
 
-.conversation-item.active {
-  border-color: var(--primary);
-  background: rgba(37, 99, 235, 0.08);
+.conversation-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
-.conversation-item.awaiting {
-  border-color: rgba(15, 159, 142, 0.4);
-}
-
-.conversation-item.awaiting::after {
-  content: 'Nou';
-  align-self: flex-start;
-  font-size: 11px;
-  color: var(--client);
-  border-radius: 999px;
-  border: 1px solid rgba(15, 159, 142, 0.4);
-  padding: 2px 8px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+.conversation-close:hover {
+  opacity: 1;
+  color: var(--danger);
 }
 .side-panel,
-.chat-panel,
 .compose-panel {
   background: var(--surface);
   border: 1px solid var(--border);
