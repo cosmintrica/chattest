@@ -26,7 +26,6 @@
   const conversationTag = document.getElementById('conversationTag');
   const conversationAlert = document.getElementById('conversationAlert');
   const resetBtn = document.getElementById('resetBtn');
-  const sideConversationCount = document.getElementById('sideConversationCount');
   const waitingPill = document.querySelector('.status-pill.waiting');
 
   const CLOSED_KEY = 'saas-live-chat-closed';
@@ -57,7 +56,6 @@
   applyTopicUI(currentTopic);
   updateConversationTag();
   updateWaitingPill();
-  updateConversationCounter(initialHistory);
   if (currentConversationId && closedConversations.has(currentConversationId)) {
     showConversationAlert('Conversația anterioară este închisă. Selectează un nou playbook.');
     disableComposer();
@@ -136,6 +134,9 @@
         currentConversationId
       );
       ChatChannel.addMessage(closingMessage);
+      ChatChannel.archiveConversation(currentConversationId, {
+        reason: 'Clientul a închis conversația din interfața client.'
+      });
     }
     currentTopic = '';
     helperText.textContent = 'Chat-ul se activează după selectarea unei opțiuni.';
@@ -174,7 +175,6 @@
     if (scopedEntries.length) {
       messageList.scrollTop = messageList.scrollHeight;
     }
-    updateConversationCounter(entries);
   }
 
   function getMessagesForCurrentConversation(entries) {
@@ -301,16 +301,6 @@
   function bindContactButton() {
     if (!contactButton) return;
     contactButton.addEventListener('click', () => setTopic(contactButton.dataset.topic));
-  }
-
-  function updateConversationCounter(entries) {
-    if (!sideConversationCount) return;
-    const unique = new Set(
-      (entries || [])
-        .map((msg) => msg.conversationId)
-        .filter(Boolean)
-    );
-    sideConversationCount.textContent = unique.size;
   }
 
   function toggleOnlineStatus(isOnline) {

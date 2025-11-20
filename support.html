@@ -21,14 +21,6 @@
       <span class="theme-icon">🌙</span>
     </button>
     <main class="support-shell">
-      <section class="support-hero">
-        <div>
-          <p class="eyebrow">Realtime ops</p>
-          <h1>Consola Support Control Tower</h1>
-          <p>Monitorizează fiecare ticket, activează mesaje scriptate și urmărește indicatorii.</p>
-        </div>
-      </section>
-
       <section class="auth-card" id="authCard">
         <p class="eyebrow">Suport autenticat</p>
         <h1>Autentificare agent</h1>
@@ -47,8 +39,8 @@
         </form>
       </section>
 
-      <section class="support-app" id="supportApp" hidden>
-        <aside class="conversation-panel">
+      <section class="support-grid" id="supportApp" hidden>
+        <aside class="panel conversation-panel">
           <header>
             <div>
               <p class="eyebrow">Conversații active</p>
@@ -60,7 +52,7 @@
           <p class="empty" id="conversationEmpty">Încă nu avem conversații deschise.</p>
         </aside>
 
-        <section class="chat-panel">
+        <section class="panel chat-panel">
           <header class="chat-header">
             <div>
               <p class="eyebrow">Instanță suport</p>
@@ -76,7 +68,7 @@
             <span class="status-pill waiting" id="queueStatus">Niciun ticket selectat</span>
           </div>
 
-          <div class="chat-body">
+          <div class="chat-stage">
             <ul class="messages" id="messageList" hidden></ul>
             <div class="typing-ribbon" id="supportTyping" hidden>
               <span class="dot"></span>
@@ -99,7 +91,7 @@
           </form>
         </section>
 
-        <aside class="support-aside">
+        <aside class="panel support-aside">
           <div class="kpi-stack">
             <article class="kpi-card">
               <p>Tickets active</p>
@@ -120,13 +112,14 @@
 
           <div class="quick-buttons" id="quickButtons"></div>
 
-          <div class="insight-card">
-            <p class="eyebrow">Guidance</p>
-            <ul>
-              <li>Folosește răspunsurile rapide pentru incidențe repetate.</li>
-              <li>Arhivează conversațiile rezolvate — clientul primește alertă.</li>
-              <li>Închide chat-ul doar după confirmarea clientului.</li>
-            </ul>
+          <div class="archive-panel">
+            <header>
+              <p class="eyebrow">Arhivate</p>
+              <span id="archivedCount">0</span>
+            </header>
+            <div class="archive-list" id="archivedList">
+              <p class="empty">Încă nu există conversații arhivate.</p>
+            </div>
           </div>
         </aside>
       </section>

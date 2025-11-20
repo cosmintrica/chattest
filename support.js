@@ -23,6 +23,7 @@
   const typingBanner = document.getElementById('supportTyping');
   const supportStatusPill = document.getElementById('supportStatus');
   const queueStatusPill = document.getElementById('queueStatus');
+  const archiveLocks = new Set();
   let autoReplies = 0;
   updateHeroStats([], 0);
 
@@ -59,9 +60,12 @@
     const conversationList = document.getElementById('conversationList');
     const conversationCount = document.getElementById('conversationCount');
     const conversationEmpty = document.getElementById('conversationEmpty');
+    const archivedList = document.getElementById('archivedList');
+    const archivedCount = document.getElementById('archivedCount');
 
     let activeConversationId = null;
     let conversations = [];
+    let archivedConversations = [];
 
     renderQuickReplies();
     rebuildConversations(ChatChannel.getHistory());
@@ -76,6 +80,9 @@
       }
       if (event.type === 'archive') {
         rebuildConversations(ChatChannel.getHistory());
+      }
+      if (event.type === 'archive') {
+        archiveLocks.delete(event.payload?.conversationId);
       }
       if (event.type === 'typing') {
         if (event.payload?.role === 'client' && event.payload.conversationId === activeConversationId) {
@@ -149,24 +156,25 @@
         }
       });
 
-      conversations = Array.from(grouped.values()).sort(
+      const sorted = Array.from(grouped.values()).sort(
         (a, b) => b.lastTimestamp - a.lastTimestamp
       );
 
-      if (conversations.length === 0) {
-        activeConversationId = null;
-      } else if (!activeConversationId || !grouped.has(activeConversationId)) {
-        activeConversationId = conversations[0].id;
+      conversations = sorted.filter((conv) => conv.status !== 'archived');
+      archivedConversations = sorted.filter((conv) => conv.status === 'archived');
+
+      if (!conversations.some((conv) => conv.id === activeConversationId)) {
+        activeConversationId = conversations.length ? conversations[0].id : null;
       }
 
       renderConversationsList();
+      renderArchivedList();
+
       const activeConversation = conversations.find((conv) => conv.id === activeConversationId);
       renderMessages(activeConversation ? activeConversation.messages : []);
       updateTopicBadge(activeConversation);
-      toggleComposerState(Boolean(activeConversation) && activeConversation.status !== 'archived');
-      const pending = conversations.filter(
-        (conv) => conv.lastRole === 'client' && conv.status !== 'archived'
-      ).length;
+      toggleComposerState(Boolean(activeConversation));
+      const pending = conversations.filter((conv) => conv.lastRole === 'client').length;
       updateHeroStats(conversations, pending);
       if (!activeConversation) {
         updateQueueStatus(null);
@@ -191,10 +199,6 @@
         if (conversation.lastRole === 'client' && conversation.id !== activeConversationId) {
           wrapper.classList.add('awaiting');
         }
-        if (conversation.status === 'archived') {
-          wrapper.classList.add('archived');
-        }
-
         const bodyBtn = document.createElement('button');
         bodyBtn.type = 'button';
         bodyBtn.className = 'conversation-body';
@@ -222,11 +226,42 @@
         closeBtn.innerHTML = '&times;';
         closeBtn.addEventListener('click', (event) => {
           event.stopPropagation();
-          archiveConversation(conversation);
+          archiveConversation(conversation, closeBtn);
         });
 
         wrapper.append(bodyBtn, closeBtn);
         conversationList.appendChild(wrapper);
+      });
+    }
+
+    function renderArchivedList() {
+      if (!archivedList || !archivedCount) return;
+      archivedList.innerHTML = '';
+      archivedCount.textContent = archivedConversations.length;
+
+      if (!archivedConversations.length) {
+        const note = document.createElement('p');
+        note.className = 'empty';
+        note.textContent = 'Încă nu există conversații arhivate.';
+        archivedList.appendChild(note);
+        return;
+      }
+
+      archivedConversations.forEach((conversation) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'archive-item';
+        button.innerHTML = `
+          <strong>#${formatConversationId(conversation.id)}</strong>
+          <span>${conversation.lastTopic || 'Fără topic'}</span>
+        `;
+        button.addEventListener('click', () => {
+          activeConversationId = conversation.id;
+          renderMessages(conversation.messages);
+          updateTopicBadge(conversation);
+          toggleComposerState(false);
+        });
+        archivedList.appendChild(button);
       });
     }
 
@@ -302,9 +337,6 @@
         : 'Context indisponibil';
       conversationBadge.textContent = `ID #${formatConversationId(conversation.id)}`;
       updateQueueStatus(conversation);
-      if (conversation.status === 'archived') {
-        toggleComposerState(false);
-      }
     }
   }
 
@@ -370,7 +402,8 @@
       queueStatusPill.textContent = 'Niciun ticket selectat';
       return;
     }
-    queueStatusPill.textContent = `Ticket #${formatConversationId(conversation.id)}`;
+    const label = conversation.status === 'archived' ? 'Arhivat' : 'Ticket';
+    queueStatusPill.textContent = `${label} #${formatConversationId(conversation.id)}`;
   }
 
   function updateSupportStatus(isOnline) {
@@ -379,17 +412,14 @@
     supportStatusPill.classList.toggle('is-offline', !isOnline);
   }
 
-  function archiveConversation(conversation) {
-    if (!conversation) return;
+  function archiveConversation(conversation, button) {
+    if (!conversation || conversation.status === 'archived') return;
+    if (archiveLocks.has(conversation.id)) return;
+    archiveLocks.add(conversation.id);
+    if (button) {
+      button.disabled = true;
+    }
     const reason = 'Ticket arhivat de suport';
-    const systemMessage = buildMessage(
-      'system',
-      reason,
-      conversation.lastTopic || '',
-      conversation.id
-    );
-    systemMessage.meta = { status: 'archived' };
-    ChatChannel.addMessage(systemMessage);
     ChatChannel.archiveConversation(conversation.id, { reason });
   }
 })();
