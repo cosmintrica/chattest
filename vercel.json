@@ -8,13 +8,17 @@
     { "src": "styles.css", "use": "@vercel/static" },
     { "src": "chat-core.js", "use": "@vercel/static" },
     { "src": "client.js", "use": "@vercel/static" },
-    { "src": "support.js", "use": "@vercel/static" }
+    { "src": "support.js", "use": "@vercel/static" },
+    { "src": "theme.js", "use": "@vercel/static" },
+    { "src": "landing.js", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/styles.css", "dest": "/styles.css" },
     { "src": "/chat-core.js", "dest": "/chat-core.js" },
     { "src": "/client.js", "dest": "/client.js" },
     { "src": "/support.js", "dest": "/support.js" },
+    { "src": "/theme.js", "dest": "/theme.js" },
+    { "src": "/landing.js", "dest": "/landing.js" },
     { "src": "/client", "dest": "/client.html" },
     { "src": "/support", "dest": "/support.html" }
   ]

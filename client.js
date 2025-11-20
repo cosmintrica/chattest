@@ -1,6 +1,19 @@
 (function () {
   const SESSION_KEY = 'saas-live-chat-session';
-  const topicButtons = document.querySelectorAll('.topic-btn');
+  const knowledgeArticles = [
+    { topic: 'Resetare parolă end-user', title: 'Reset password flow', subtitle: 'Automatizare secure' },
+    { topic: 'Anomalii de facturare', title: 'Billing discrepancies', subtitle: 'Credit note, dispute' },
+    { topic: 'Provisioning cont nou', title: 'New account provisioning', subtitle: 'Onboarding orchestration' },
+    { topic: 'Limitări API', title: 'API rate limits', subtitle: 'Observability & scaling' },
+    { topic: 'Integrare SSO enterprise', title: 'Single sign-on setup', subtitle: 'SAML & SCIM' },
+    { topic: 'Analitice întârziate', title: 'Usage analytics delays', subtitle: 'Dashboard lag' },
+    { topic: 'Upgrade plan + add-ons', title: 'Plan upgrades & add-ons', subtitle: 'Prorata & seats' },
+    { topic: 'Export date / GDPR', title: 'Data export & GDPR', subtitle: 'Compliance requests' },
+    { topic: 'Integrare marketplace', title: 'Marketplace integrations', subtitle: 'Webhooks QA' },
+    { topic: 'Incident critic în platformă', title: 'Critical incident', subtitle: 'Runbooks NOC' }
+  ];
+
+  const topicList = document.getElementById('topicList');
   const contactButton = document.getElementById('contactButton');
   const messageList = document.getElementById('messageList');
   const emptyState = document.getElementById('emptyState');
@@ -11,9 +24,15 @@
   const topicPill = document.getElementById('topicPill');
   const conversationTag = document.getElementById('conversationTag');
   const resetBtn = document.getElementById('resetBtn');
+  const sideConversationCount = document.getElementById('sideConversationCount');
+  const waitingPill = document.querySelector('.status-pill.waiting');
 
+  let topicButtons = [];
   let currentTopic = '';
   let currentConversationId = sessionStorage.getItem(SESSION_KEY) || '';
+
+  renderTopicList();
+  bindContactButton();
 
   const initialHistory = ChatChannel.getHistory();
   const existingMessages = getMessagesForCurrentConversation(initialHistory);
@@ -23,6 +42,9 @@
 
   renderHistory(initialHistory);
   applyTopicUI(currentTopic);
+  updateConversationTag();
+  updateWaitingPill();
+  updateConversationCounter(initialHistory);
 
   ChatChannel.onEvent((event) => {
     switch (event.type) {
@@ -50,15 +72,9 @@
       ? `Problemă selectată: ${topic}`
       : 'Chat-ul se activează după selectarea unei opțiuni.';
     applyTopicUI(currentTopic);
+    updateWaitingPill();
     startNewConversation();
   };
-
-  topicButtons.forEach((button) =>
-    button.addEventListener('click', () => setTopic(button.dataset.topic))
-  );
-  if (contactButton) {
-    contactButton.addEventListener('click', () => setTopic(contactButton.dataset.topic));
-  }
 
   clientForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -86,6 +102,7 @@
     currentTopic = '';
     helperText.textContent = 'Chat-ul se activează după selectarea unei opțiuni.';
     applyTopicUI(currentTopic);
+    updateWaitingPill();
     startNewConversation();
   });
 
@@ -110,6 +127,7 @@
     if (scopedEntries.length) {
       messageList.scrollTop = messageList.scrollHeight;
     }
+    updateConversationCounter(entries);
   }
 
   function getMessagesForCurrentConversation(entries) {
@@ -170,6 +188,11 @@
       : 'ID disponibil după primul mesaj';
   }
 
+  function updateWaitingPill() {
+    if (!waitingPill) return;
+    waitingPill.textContent = currentTopic ? 'Playbook selectat' : 'Selectează playbook';
+  }
+
   function buildMessage(role, text, topic, conversationId) {
     return {
       id: crypto?.randomUUID
@@ -209,7 +232,36 @@
     return `conv-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
   }
 
-  updateConversationTag();
+  function renderTopicList() {
+    if (!topicList) return;
+    topicList.innerHTML = '';
+    knowledgeArticles.forEach((article) => {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.className = 'topic-btn';
+      button.dataset.topic = article.topic;
+      button.innerHTML = `<span>${article.title}</span><small>${article.subtitle}</small>`;
+      button.addEventListener('click', () => setTopic(article.topic));
+      item.appendChild(button);
+      topicList.appendChild(item);
+    });
+    topicButtons = Array.from(topicList.querySelectorAll('.topic-btn'));
+  }
+
+  function bindContactButton() {
+    if (!contactButton) return;
+    contactButton.addEventListener('click', () => setTopic(contactButton.dataset.topic));
+  }
+
+  function updateConversationCounter(entries) {
+    if (!sideConversationCount) return;
+    const unique = new Set(
+      (entries || [])
+        .map((msg) => msg.conversationId)
+        .filter(Boolean)
+    );
+    sideConversationCount.textContent = unique.size;
+  }
 })();
 
 

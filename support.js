@@ -17,6 +17,11 @@
   const authPass = document.getElementById('authPass');
   const authError = document.getElementById('authError');
   const supportApp = document.getElementById('supportApp');
+  const kpiActive = document.getElementById('kpiActive');
+  const kpiPending = document.getElementById('kpiPending');
+  const kpiAuto = document.getElementById('kpiAuto');
+  let autoReplies = 0;
+  updateHeroStats([], 0);
 
   if (sessionStorage.getItem(AUTH_KEY) === 'true') {
     unlockConsole();
@@ -81,8 +86,10 @@
     supportReset.addEventListener('click', () => {
       ChatChannel.clearHistory();
       activeConversationId = null;
+      autoReplies = 0;
       renderMessages([]);
       renderConversationsList();
+      updateHeroStats([], 0);
     });
 
     function renderQuickReplies() {
@@ -93,7 +100,7 @@
         button.textContent = text;
         button.addEventListener('click', () => {
           if (!activeConversationId) return;
-          sendSupportMessage(text);
+          sendSupportMessage(text, true);
         });
         quickButtons.appendChild(button);
       });
@@ -135,6 +142,8 @@
       renderMessages(activeConversation ? activeConversation.messages : []);
       updateTopicBadge(activeConversation);
       toggleComposerState(Boolean(activeConversation));
+      const pending = conversations.filter((conv) => conv.lastRole === 'client').length;
+      updateHeroStats(conversations, pending);
     }
 
     function renderConversationsList() {
@@ -208,11 +217,18 @@
       messageList.hidden = showEmpty;
     }
 
-    function sendSupportMessage(text) {
+    function sendSupportMessage(text, isAuto = false) {
       const conversation = conversations.find((conv) => conv.id === activeConversationId);
       ChatChannel.addMessage(
         buildMessage('support', text, conversation?.lastTopic || '', activeConversationId)
       );
+      if (isAuto) {
+        autoReplies += 1;
+        updateHeroStats(
+          conversations,
+          conversations.filter((conv) => conv.lastRole === 'client').length
+        );
+      }
     }
 
     function toggleComposerState(enabled) {
@@ -268,6 +284,18 @@
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  function updateHeroStats(conversations, pendingCount) {
+    if (kpiActive) {
+      kpiActive.textContent = conversations.length;
+    }
+    if (kpiPending) {
+      kpiPending.textContent = pendingCount;
+    }
+    if (kpiAuto) {
+      kpiAuto.textContent = autoReplies;
+    }
   }
 })();
 

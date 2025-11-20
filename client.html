@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="global-bg">
+      <span class="orb orb-1"></span>
+      <span class="orb orb-2"></span>
+    </div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
       <span class="theme-icon">🌙</span>
     </button>
@@ -24,22 +28,39 @@
           <p>Pasul 1: selectează problema. Pasul 2: începe discuția.</p>
         </header>
 
-        <ul class="topic-list">
-          <li><button class="topic-btn" data-topic="Resetare parolă end-user">Reset password flow</button></li>
-          <li><button class="topic-btn" data-topic="Anomalii de facturare">Billing discrepancies</button></li>
-          <li><button class="topic-btn" data-topic="Provisioning cont nou">New account provisioning</button></li>
-          <li><button class="topic-btn" data-topic="Limitări API">API rate limits</button></li>
-          <li><button class="topic-btn" data-topic="Integrare SSO enterprise">Single sign-on setup</button></li>
-          <li><button class="topic-btn" data-topic="Analitice întârziate">Usage analytics delays</button></li>
-          <li><button class="topic-btn" data-topic="Upgrade plan + add-ons">Plan upgrades & add-ons</button></li>
-          <li><button class="topic-btn" data-topic="Export date / GDPR">Data export & GDPR</button></li>
-          <li><button class="topic-btn" data-topic="Integrare marketplace">Marketplace integrations</button></li>
-          <li><button class="topic-btn" data-topic="Incident critic în platformă">Critical incident</button></li>
-        </ul>
+        <div class="side-stats">
+          <article class="side-stat">
+            <p>Live SLA</p>
+            <strong>99.95%</strong>
+            <span>status: healthy</span>
+          </article>
+          <article class="side-stat">
+            <p>Latency</p>
+            <strong>120ms</strong>
+            <span>broadcast channel</span>
+          </article>
+          <article class="side-stat">
+            <p>Conversații active</p>
+            <strong id="sideConversationCount">0</strong>
+            <span>sincronizate</span>
+          </article>
+        </div>
+
+        <div class="topic-stack">
+          <div class="topic-stack-head">
+            <p class="eyebrow">Playbook-uri</p>
+            <h3>Fluxuri recomandate</h3>
+          </div>
+          <ul class="topic-list" id="topicList"></ul>
+        </div>
 
         <button class="ghost-btn" id="contactButton" data-topic="Contact direct">
           Get in touch with us
         </button>
+        <p class="side-note">
+          Poți selecta orice flux din listă sau contactează-ne direct pentru scenarii custom |
+          Rollouts, tenant moves, migrare regionale.
+        </p>
       </aside>
 
       <section class="chat-panel">
@@ -53,6 +74,11 @@
             <div class="conversation-pill" id="conversationTag">ID disponibil după primul mesaj</div>
           </div>
         </header>
+        <div class="status-pill-group">
+          <span class="status-pill online">Client online</span>
+          <span class="status-pill sync">Broadcast sincron</span>
+          <span class="status-pill waiting">Selectează playbook</span>
+        </div>
 
         <ul class="messages" id="messageList" hidden></ul>
         <div class="empty" id="emptyState">
@@ -73,10 +99,14 @@
           <small id="helperText">Chat-ul se activează după selectarea unei opțiuni.</small>
         </form>
 
-        <p class="link-hint">
-          Deschide și <a href="support.html" target="_blank" rel="noreferrer noopener">instanța de suport</a> pentru a
-          urmări răspunsurile live.
-        </p>
+        <div class="guidance-card">
+          <p>
+            Deschide și
+            <a href="support.html" target="_blank" rel="noreferrer noopener">instanța de suport</a>
+            pentru a urmări răspunsurile live și KPIs actualizați.
+          </p>
+          <span>Tip: rulează ferestrele alăturate pentru demo complet.</span>
+        </div>
       </section>
     </main>
 

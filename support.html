@@ -12,11 +12,40 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-<body>
+  <body>
+    <div class="global-bg">
+      <span class="orb orb-1"></span>
+      <span class="orb orb-3"></span>
+    </div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
       <span class="theme-icon">🌙</span>
     </button>
     <main class="support-shell">
+      <section class="support-hero">
+        <div>
+          <p class="eyebrow">Realtime ops</p>
+          <h1>Consola Support Control Tower</h1>
+          <p>Monitorizează fiecare ticket, activează mesaje scriptate și urmărește indicatorii.</p>
+        </div>
+        <div class="hero-stats">
+          <article class="kpi-card">
+            <p>Tickets active</p>
+            <strong id="kpiActive">0</strong>
+            <span>conversații live</span>
+          </article>
+          <article class="kpi-card">
+            <p>Pending replies</p>
+            <strong id="kpiPending">0</strong>
+            <span>așteaptă răspuns</span>
+          </article>
+          <article class="kpi-card">
+            <p>Autoreplies trimise</p>
+            <strong id="kpiAuto">0</strong>
+            <span>mesaje scriptate</span>
+          </article>
+        </div>
+      </section>
+
       <section class="auth-card" id="authCard">
         <p class="eyebrow">Suport autenticat</p>
         <h1>Autentificare agent</h1>

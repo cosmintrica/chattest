@@ -13,41 +13,84 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="landing-body">
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+    <div class="global-bg">
+      <span class="orb orb-1"></span>
+      <span class="orb orb-2"></span>
+      <span class="orb orb-3"></span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Comută tema">
       <span class="theme-icon">🌙</span>
     </button>
     <main class="landing">
-      <section class="landing-card">
-        <p class="eyebrow">Set-up</p>
-        <h1>Testează live chat-ul în două instanțe</h1>
-        <p>
-          Lansăm două pagini diferite care comunică între ele în timp real: una pentru client și una
-          pentru specialistul de suport. Deschide-le în browsere separate sau în două ferestre
-          alăturate pentru a vedea conversația sincronizată.
-        </p>
-
-        <div class="landing-actions">
-          <a class="primary-link" href="client.html" target="_blank" rel="noreferrer noopener">
-            Deschide instanța Client
-          </a>
-          <a class="secondary-link" href="support.html" target="_blank" rel="noreferrer noopener">
-            Deschide instanța Suport
-          </a>
+      <section class="landing-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Dual-instance cockpit</p>
+          <h1>Coordonează clienții și suportul dintr-un singur hub vizual.</h1>
+          <p class="hero-lede">
+            Simulează un incident real, vezi cum se propagă mesajele în timp real și urmărește
+            indicatorii operaționali pentru fiecare instanță SaaS.
+          </p>
+          <div class="hero-cta">
+            <a class="primary-link" href="client.html" target="_blank" rel="noreferrer noopener">
+              Lan­sează instanța Client
+            </a>
+            <a class="secondary-link" href="support.html" target="_blank" rel="noreferrer noopener">
+              Deschide consola Suport
+            </a>
+          </div>
+          <div class="hero-chips">
+            <span>Observability live</span>
+            <span>Broadcast channel sync</span>
+            <span>Playbooks dinamice</span>
+          </div>
+          <div class="hero-metrics" id="metricsGrid"></div>
         </div>
+        <div class="hero-visual">
+          <div class="radar">
+            <span class="ping ping-1"></span>
+            <span class="ping ping-2"></span>
+            <span class="ping ping-3"></span>
+          </div>
+          <div class="hero-module">
+            <p>Status instanțe</p>
+            <div class="module-row">
+              <span class="dot online"></span>
+              <span>Client workspace</span>
+              <strong>live</strong>
+            </div>
+            <div class="module-row">
+              <span class="dot scripted"></span>
+              <span>Support cockpit</span>
+              <strong>scripted</strong>
+            </div>
+            <div class="module-row">
+              <span class="dot sync"></span>
+              <span>Broadcast channel</span>
+              <strong>locked</strong>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <ol class="landing-steps">
-          <li>Deschide instanța Client și alege problema din lista de articole.</li>
-          <li>
-            Deschide instanța Suport (într-o a doua fereastră) pentru a trimite sau a selecta
-            mesaje predefinite.
-          </li>
-          <li>
-            Urmărește sincronizarea automată: fiecare mesaj apare instant în cealaltă instanță.
-          </li>
-        </ol>
+      <section class="feature-grid" id="featureGrid"></section>
+
+      <section class="workflow-card">
+        <div class="workflow-head">
+          <div>
+            <p class="eyebrow">Flux operațional</p>
+            <h2>3 pași până la rezoluție</h2>
+          </div>
+          <p>
+            Selectează un articol knowledge, pornește chat-ul din instanța Client și răspunde din
+            consola de Suport cu mesaje scriptate sau custom.
+          </p>
+        </div>
+        <div class="workflow-steps" id="workflowSteps"></div>
       </section>
     </main>
+
     <script src="theme.js"></script>
+    <script src="landing.js"></script>
   </body>
 </html>
 
