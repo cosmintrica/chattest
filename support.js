@@ -20,6 +20,7 @@
   const kpiActive = document.getElementById('kpiActive');
   const kpiPending = document.getElementById('kpiPending');
   const kpiAuto = document.getElementById('kpiAuto');
+  const typingBanner = document.getElementById('supportTyping');
   let autoReplies = 0;
   updateHeroStats([], 0);
 
@@ -51,7 +52,6 @@
     const quickButtons = document.getElementById('quickButtons');
     const supportForm = document.getElementById('supportForm');
     const supportInput = document.getElementById('supportInput');
-    const supportReset = document.getElementById('supportReset');
     const topicPill = document.getElementById('topicPill');
     const conversationBadge = document.getElementById('conversationBadge');
     const conversationList = document.getElementById('conversationList');
@@ -64,13 +64,24 @@
     renderQuickReplies();
     rebuildConversations(ChatChannel.getHistory());
 
+    ChatChannel.connect({ role: 'support' });
+
     ChatChannel.onEvent((event) => {
-      if (event.type === 'reset') {
-        rebuildConversations([]);
-        return;
-      }
       if (event.type === 'message' || event.type === 'sync') {
         rebuildConversations(ChatChannel.getHistory());
+      }
+      if (event.type === 'archive') {
+        rebuildConversations(ChatChannel.getHistory());
+      }
+      if (event.type === 'typing') {
+        if (event.payload?.role === 'client' && event.payload.conversationId === activeConversationId) {
+          showTypingBanner();
+        }
+      }
+      if (event.type === 'typing-stop') {
+        if (event.payload?.role === 'client' && event.payload.conversationId === activeConversationId) {
+          hideTypingBanner();
+        }
       }
     });
 
@@ -81,15 +92,12 @@
       if (!text) return;
       sendSupportMessage(text);
       supportInput.value = '';
+      ChatChannel.stopTyping(activeConversationId);
     });
 
-    supportReset.addEventListener('click', () => {
-      ChatChannel.clearHistory();
-      activeConversationId = null;
-      autoReplies = 0;
-      renderMessages([]);
-      renderConversationsList();
-      updateHeroStats([], 0);
+    supportInput.addEventListener('input', () => {
+      if (!activeConversationId) return;
+      ChatChannel.sendTyping(activeConversationId);
     });
 
     function renderQuickReplies() {
@@ -117,7 +125,8 @@
             messages: [],
             lastTimestamp: 0,
             lastTopic: '',
-            lastRole: ''
+            lastRole: '',
+            status: 'open'
           });
         }
         const entry = grouped.get(id);
@@ -125,6 +134,9 @@
         entry.lastTimestamp = message.timestamp || Date.now();
         if (message.topic) entry.lastTopic = message.topic;
         entry.lastRole = message.role;
+        if (message.meta?.status === 'archived') {
+          entry.status = 'archived';
+        }
       });
 
       conversations = Array.from(grouped.values()).sort(
@@ -141,8 +153,10 @@
       const activeConversation = conversations.find((conv) => conv.id === activeConversationId);
       renderMessages(activeConversation ? activeConversation.messages : []);
       updateTopicBadge(activeConversation);
-      toggleComposerState(Boolean(activeConversation));
-      const pending = conversations.filter((conv) => conv.lastRole === 'client').length;
+      toggleComposerState(Boolean(activeConversation) && activeConversation.status !== 'archived');
+      const pending = conversations.filter(
+        (conv) => conv.lastRole === 'client' && conv.status !== 'archived'
+      ).length;
       updateHeroStats(conversations, pending);
     }
 
@@ -156,40 +170,56 @@
       conversationCount.textContent = conversations.length;
 
       conversations.forEach((conversation) => {
-        const item = document.createElement('button');
-        item.type = 'button';
-        item.className = 'conversation-item';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'conversation-item';
         if (conversation.id === activeConversationId) {
-          item.classList.add('active');
+          wrapper.classList.add('active');
         }
         if (conversation.lastRole === 'client' && conversation.id !== activeConversationId) {
-          item.classList.add('awaiting');
+          wrapper.classList.add('awaiting');
+        }
+        if (conversation.status === 'archived') {
+          wrapper.classList.add('archived');
         }
 
+        const bodyBtn = document.createElement('button');
+        bodyBtn.type = 'button';
+        bodyBtn.className = 'conversation-body';
         const shortId = formatConversationId(conversation.id);
-        item.innerHTML = `
+        bodyBtn.innerHTML = `
           <span class="conversation-id">#${shortId}</span>
           <span class="conversation-topic">${conversation.lastTopic || 'Fără topic'}</span>
           <p class="conversation-preview">${
             conversation.messages[conversation.messages.length - 1]?.text || ''
           }</p>
         `;
-
-        item.addEventListener('click', () => {
+        bodyBtn.addEventListener('click', () => {
           if (activeConversationId === conversation.id) return;
           activeConversationId = conversation.id;
           renderConversationsList();
           renderMessages(conversation.messages);
           updateTopicBadge(conversation);
-          toggleComposerState(true);
+          toggleComposerState(conversation.status !== 'archived');
         });
 
-        conversationList.appendChild(item);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'conversation-close';
+        closeBtn.setAttribute('aria-label', 'Arhivează conversația');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          ChatChannel.archiveConversation(conversation.id, { reason: 'Ticket arhivat de suport' });
+        });
+
+        wrapper.append(bodyBtn, closeBtn);
+        conversationList.appendChild(wrapper);
       });
     }
 
     function renderMessages(entries) {
       messageList.innerHTML = '';
+      hideTypingBanner();
       if (!entries.length) {
         toggleEmpty(true);
         return;
@@ -197,6 +227,9 @@
       entries.forEach((message) => {
         const item = document.createElement('li');
         item.className = `bubble ${message.role}`;
+        if (message.meta?.status === 'archived') {
+          item.classList.add('bubble-status');
+        }
 
         const meta = document.createElement('div');
         meta.className = 'bubble-meta';
@@ -237,6 +270,11 @@
       quickButtons.querySelectorAll('button').forEach((btn) => {
         btn.disabled = !enabled;
       });
+      if (!enabled) {
+        supportInput.placeholder = 'Conversația este arhivată.';
+      } else {
+        supportInput.placeholder = 'Scrie răspunsul...';
+      }
     }
 
     function updateTopicBadge(conversation) {
@@ -249,6 +287,9 @@
         ? `Context: ${conversation.lastTopic}`
         : 'Context indisponibil';
       conversationBadge.textContent = `ID #${formatConversationId(conversation.id)}`;
+      if (conversation.status === 'archived') {
+        toggleComposerState(false);
+      }
     }
   }
 
@@ -296,6 +337,16 @@
     if (kpiAuto) {
       kpiAuto.textContent = autoReplies;
     }
+  }
+
+  function showTypingBanner() {
+    if (!typingBanner) return;
+    typingBanner.hidden = false;
+  }
+
+  function hideTypingBanner() {
+    if (!typingBanner) return;
+    typingBanner.hidden = true;
   }
 })();
 

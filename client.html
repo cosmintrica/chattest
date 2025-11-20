@@ -79,8 +79,15 @@
           <span class="status-pill sync">Broadcast sincron</span>
           <span class="status-pill waiting">Selectează playbook</span>
         </div>
+        <div class="conversation-alert" id="conversationAlert" hidden></div>
 
         <ul class="messages" id="messageList" hidden></ul>
+        <div class="typing-ribbon" id="typingIndicator" hidden>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <p>Suportul tastează...</p>
+        </div>
         <div class="empty" id="emptyState">
           <strong>Pasul 1:</strong> alege un articol din panoul din stânga.
         </div>
@@ -110,6 +117,8 @@
       </section>
     </main>
 
+    <script src="config.js"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js" integrity="sha384-uCBj3TDIrS9KuX3sI5Yucs5cjox96D65gis6pZeRAgvIJ5zsxFrqxbPjzvY4xXas" crossorigin="anonymous"></script>
     <script src="chat-core.js"></script>
     <script src="theme.js"></script>
     <script src="client.js"></script>

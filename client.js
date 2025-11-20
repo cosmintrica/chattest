@@ -17,19 +17,32 @@
   const contactButton = document.getElementById('contactButton');
   const messageList = document.getElementById('messageList');
   const emptyState = document.getElementById('emptyState');
+  const typingIndicator = document.getElementById('typingIndicator');
   const clientForm = document.getElementById('clientForm');
   const clientInput = document.getElementById('clientInput');
   const clientSend = document.getElementById('clientSend');
   const helperText = document.getElementById('helperText');
   const topicPill = document.getElementById('topicPill');
   const conversationTag = document.getElementById('conversationTag');
+  const conversationAlert = document.getElementById('conversationAlert');
   const resetBtn = document.getElementById('resetBtn');
   const sideConversationCount = document.getElementById('sideConversationCount');
   const waitingPill = document.querySelector('.status-pill.waiting');
 
+  const CLOSED_KEY = 'saas-live-chat-closed';
+  const safeParse = (value, fallback) => {
+    try {
+      return value ? JSON.parse(value) : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  };
+
   let topicButtons = [];
   let currentTopic = '';
   let currentConversationId = sessionStorage.getItem(SESSION_KEY) || '';
+  let typingTimeout = null;
+  let closedConversations = new Set(safeParse(localStorage.getItem(CLOSED_KEY), []));
 
   renderTopicList();
   bindContactButton();
@@ -45,21 +58,44 @@
   updateConversationTag();
   updateWaitingPill();
   updateConversationCounter(initialHistory);
+  if (currentConversationId && closedConversations.has(currentConversationId)) {
+    showConversationAlert('Conversația anterioară este închisă. Selectează un nou playbook.');
+    disableComposer();
+  }
+
+  ChatChannel.connect({ role: 'client' });
 
   ChatChannel.onEvent((event) => {
     switch (event.type) {
+      case 'connected':
+        toggleOnlineStatus(true);
+        break;
+      case 'disconnected':
+        toggleOnlineStatus(false);
+        break;
       case 'message':
         renderHistory(ChatChannel.getHistory());
-        break;
-      case 'reset':
-        currentTopic = '';
-        helperText.textContent = 'Chat-ul se activează după selectarea unei opțiuni.';
-        resetConversationId();
-        applyTopicUI(currentTopic);
-        clearLocalView();
+        if (event.payload?.meta?.status === 'archived') {
+          handleConversationClosed(event.payload.conversationId, event.payload.meta?.reason);
+        }
         break;
       case 'sync':
         renderHistory(event.payload || []);
+        break;
+      case 'archive':
+        if (event.payload?.conversationId === currentConversationId) {
+          handleConversationClosed(event.payload.conversationId, event.payload.reason);
+        }
+        break;
+      case 'typing':
+        if (event.payload?.role === 'support' && event.payload.conversationId === currentConversationId) {
+          showTypingIndicator();
+        }
+        break;
+      case 'typing-stop':
+        if (event.payload?.role === 'support' && event.payload.conversationId === currentConversationId) {
+          hideTypingIndicator();
+        }
         break;
       default:
         break;
@@ -68,6 +104,7 @@
 
   const setTopic = (topic) => {
     currentTopic = topic;
+    ChatChannel.setTopic(topic);
     helperText.textContent = topic
       ? `Problemă selectată: ${topic}`
       : 'Chat-ul se activează după selectarea unei opțiuni.';
@@ -87,6 +124,7 @@
     ensureConversationId();
     ChatChannel.addMessage(buildMessage('client', text, currentTopic, currentConversationId));
     clientInput.value = '';
+    ChatChannel.stopTyping(currentConversationId);
   });
 
   resetBtn.addEventListener('click', () => {
@@ -106,6 +144,11 @@
     startNewConversation();
   });
 
+  clientInput.addEventListener('input', () => {
+    if (!currentConversationId || clientInput.disabled) return;
+    ChatChannel.sendTyping(currentConversationId);
+  });
+
   function renderHistory(entries) {
     const scopedEntries = getMessagesForCurrentConversation(entries);
     messageList.innerHTML = '';
@@ -119,6 +162,10 @@
 
       const copy = document.createElement('p');
       copy.textContent = message.text;
+
+      if (message.meta?.status === 'archived') {
+        item.classList.add('bubble-status');
+      }
 
       item.append(meta, copy);
       messageList.appendChild(item);
@@ -138,6 +185,9 @@
   function startNewConversation() {
     resetConversationId();
     clearLocalView();
+    hideTypingIndicator();
+    hideConversationAlert();
+    enableComposer();
   }
 
   function clearLocalView() {
@@ -261,6 +311,68 @@
         .filter(Boolean)
     );
     sideConversationCount.textContent = unique.size;
+  }
+
+  function toggleOnlineStatus(isOnline) {
+    const onlinePill = document.querySelector('.status-pill.online');
+    const syncPill = document.querySelector('.status-pill.sync');
+    if (!onlinePill || !syncPill) return;
+    onlinePill.classList.toggle('is-offline', !isOnline);
+    onlinePill.textContent = isOnline ? 'Client online' : 'Offline';
+    syncPill.textContent = isOnline ? 'Broadcast sincron' : 'Reconectare...';
+  }
+
+  function showTypingIndicator() {
+    if (!typingIndicator) return;
+    typingIndicator.hidden = false;
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      hideTypingIndicator();
+    }, 2600);
+  }
+
+  function hideTypingIndicator() {
+    if (!typingIndicator) return;
+    typingIndicator.hidden = true;
+  }
+
+  function showConversationAlert(message) {
+    if (!conversationAlert) return;
+    conversationAlert.hidden = false;
+    conversationAlert.textContent = message;
+  }
+
+  function hideConversationAlert() {
+    if (!conversationAlert) return;
+    conversationAlert.hidden = true;
+    conversationAlert.textContent = '';
+  }
+
+  function handleConversationClosed(conversationId, reason) {
+    if (!conversationId) return;
+    closedConversations.add(conversationId);
+    localStorage.setItem(CLOSED_KEY, JSON.stringify([...closedConversations]));
+    if (conversationId === currentConversationId) {
+      showConversationAlert(reason || 'Conversația a fost închisă de suport.');
+      disableComposer();
+    }
+  }
+
+  function disableComposer() {
+    clientInput.disabled = true;
+    clientSend.disabled = true;
+    helperText.textContent = 'Conversația a fost închisă. Selectează un nou playbook.';
+  }
+
+  function enableComposer() {
+    const disabled = !currentTopic;
+    clientInput.disabled = disabled;
+    clientSend.disabled = disabled;
+    if (!disabled) {
+      helperText.textContent = `Problemă selectată: ${currentTopic}`;
+    } else {
+      helperText.textContent = 'Chat-ul se activează după selectarea unei opțiuni.';
+    }
   }
 })();
 

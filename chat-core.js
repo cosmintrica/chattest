@@ -1,9 +1,14 @@
 (function () {
   const STORAGE_KEY = 'saas-live-chat-history';
   const TOPIC_KEY = 'saas-live-chat-topic';
-  const CHANNEL_NAME = 'saas-live-chat-channel';
+  const MAX_HISTORY = 400;
+  const TYPING_TTL = 2800;
+
+  const config = window.CHAT_CONFIG || {};
   const listeners = new Set();
-  const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
+  let socket = null;
+  let role = 'client';
+  let typingTimers = new Map();
 
   const safeParse = (value, fallback) => {
     try {
@@ -16,7 +21,7 @@
   const getHistory = () => safeParse(localStorage.getItem(STORAGE_KEY), []);
 
   const saveHistory = (history) => {
-    const limited = history.slice(-200);
+    const limited = history.slice(-MAX_HISTORY);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(limited));
   };
 
@@ -30,70 +35,121 @@
   };
 
   const emit = (event) => {
-    listeners.forEach((callback) => callback(event));
+    if (!event || !event.type) return;
+    listeners.forEach((callback) => {
+      try {
+        callback(event);
+      } catch (error) {
+        console.warn('ChatChannel listener error', error);
+      }
+    });
   };
 
-  const handleEvent = (event) => {
-    if (!event || !event.type) return;
+  const syncHistory = (serverHistory = []) => {
+    if (!Array.isArray(serverHistory)) return;
+    saveHistory(serverHistory);
+    emit({ type: 'sync', payload: serverHistory });
+  };
 
-    if (event.type === 'message' && event.payload) {
-      upsertMessage(event.payload);
+  const ensureSocket = () => {
+    if (socket || typeof io === 'undefined') return;
+    if (!config.serverUrl) {
+      console.warn('CHAT_CONFIG.serverUrl nu este definit.');
+      return;
     }
 
-    if (event.type === 'reset') {
+    socket = io(config.serverUrl, {
+      transports: ['websocket'],
+      auth: {
+        key: config.serverKey || 'demo-key',
+        role
+      }
+    });
+
+    socket.on('connect', () => emit({ type: 'connected' }));
+    socket.on('disconnect', () => emit({ type: 'disconnected' }));
+    socket.on('history', (payload) => syncHistory(payload));
+    socket.on('message', (message) => {
+      upsertMessage(message);
+      emit({ type: 'message', payload: message });
+    });
+    socket.on('archive', (payload) => emit({ type: 'archive', payload }));
+    socket.on('typing', (payload) => emit({ type: 'typing', payload }));
+    socket.on('typing-stop', (payload) => emit({ type: 'typing-stop', payload }));
+    socket.on('error', (error) => emit({ type: 'error', payload: error }));
+  };
+
+  const scheduleTypingStop = (conversationId, origin) => {
+    if (!conversationId) return;
+    const timerKey = `${conversationId}-${origin}`;
+    clearTimeout(typingTimers.get(timerKey));
+    typingTimers.set(
+      timerKey,
+      setTimeout(() => {
+        emit({ type: 'typing-stop', payload: { conversationId, role: origin } });
+      }, TYPING_TTL)
+    );
+  };
+
+  window.ChatChannel = {
+    connect(options = {}) {
+      role = options.role || 'client';
+      ensureSocket();
+    },
+    addMessage(message) {
+      if (!message || !message.conversationId) return;
+      upsertMessage(message);
+      emit({ type: 'message', payload: message });
+      if (socket) {
+        socket.emit('message', {
+          ...message,
+          text: (message.text || '').slice(0, config.maxMessageLength || 1200)
+        });
+      }
+    },
+    sendTyping(conversationId) {
+      if (!socket || !conversationId) return;
+      socket.emit('typing', { conversationId, role });
+    },
+    stopTyping(conversationId) {
+      if (!socket || !conversationId) return;
+      socket.emit('typing-stop', { conversationId, role });
+    },
+    archiveConversation(conversationId, meta = {}) {
+      if (!conversationId) return;
+      emit({ type: 'archive', payload: { conversationId, reason: meta.reason } });
+      if (socket) {
+        socket.emit('archive', { conversationId, meta, role });
+      }
+    },
+    clearHistory() {
       localStorage.removeItem(STORAGE_KEY);
-    }
-
-    if (event.type === 'topic') {
-      if (event.payload) {
-        localStorage.setItem(TOPIC_KEY, event.payload);
+      emit({ type: 'sync', payload: [] });
+    },
+    setTopic(topic) {
+      if (topic) {
+        localStorage.setItem(TOPIC_KEY, topic);
       } else {
         localStorage.removeItem(TOPIC_KEY);
       }
-    }
-
-    emit(event);
-  };
-
-  if (channel) {
-    channel.onmessage = (event) => handleEvent(event.data);
-  }
-
-  window.addEventListener('storage', (event) => {
-    if (event.key === STORAGE_KEY) {
-      emit({ type: 'sync', payload: getHistory() });
-    }
-    if (event.key === TOPIC_KEY) {
-      emit({ type: 'topic', payload: getTopic() });
-    }
-  });
-
-  const send = (event) => {
-    if (channel) {
-      channel.postMessage(event);
-    }
-    handleEvent(event);
-  };
-
-  const getTopic = () => localStorage.getItem(TOPIC_KEY) || '';
-
-  window.ChatChannel = {
-    addMessage(message) {
-      send({ type: 'message', payload: message });
+      emit({ type: 'topic', payload: topic || '' });
     },
-    clearHistory() {
-      send({ type: 'reset' });
+    getTopic() {
+      return localStorage.getItem(TOPIC_KEY) || '';
     },
-    setTopic(topic) {
-      send({ type: 'topic', payload: topic || '' });
-    },
-    getTopic,
     getHistory,
     onEvent(callback) {
       listeners.add(callback);
       return () => listeners.delete(callback);
     }
   };
+
+  window.addEventListener('storage', (event) => {
+    if (event.key === STORAGE_KEY) {
+      emit({ type: 'sync', payload: getHistory() });
+    }
+    if (event.key === TOPIC_KEY) {
+      emit({ type: 'topic', payload: window.ChatChannel.getTopic() });
+    }
+  });
 })();
-
-

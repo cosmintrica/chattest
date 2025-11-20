@@ -62,7 +62,6 @@
           <button type="submit">Log in</button>
           <p class="auth-error" id="authError" hidden>User sau parolă greșite.</p>
         </form>
-        <small>Hint: admin / admin</small>
       </section>
 
       <section class="support-app" id="supportApp" hidden>
@@ -91,6 +90,12 @@
           </header>
 
           <ul class="messages" id="messageList" hidden></ul>
+          <div class="typing-ribbon" id="supportTyping" hidden>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <p>Clientul tastează...</p>
+          </div>
           <div class="empty" id="emptyState">
             Selectează un ticket din coloana din stânga pentru a vedea istoricul.
           </div>
@@ -112,12 +117,12 @@
             ></textarea>
             <button type="submit">Trimite răspuns</button>
           </form>
-
-          <button type="button" class="secondary-btn" id="supportReset">Curăță toate conversațiile</button>
         </section>
       </section>
     </main>
 
+    <script src="config.js"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js" integrity="sha384-uCBj3TDIrS9KuX3sI5Yucs5cjox96D65gis6pZeRAgvIJ5zsxFrqxbPjzvY4xXas" crossorigin="anonymous"></script>
     <script src="chat-core.js"></script>
     <script src="theme.js"></script>
     <script src="support.js"></script>
