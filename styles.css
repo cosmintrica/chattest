@@ -19,6 +19,26 @@
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0a0e1a;
+  --surface: #131722;
+  --border: #1e2330;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --client: #2dd4bf;
+  --support: #a78bfa;
+  --aqua: #2dd4bf;
+  --purple: #a78bfa;
+  --card: #1a1f2e;
+  --card-soft: #131722;
+  --text-dim: rgba(226, 232, 240, 0.7);
+  --accent: linear-gradient(135deg, #a78bfa, #2dd4bf);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -221,7 +241,7 @@ a {
   border-radius: 16px;
   border: 1px solid var(--border);
   padding: 12px 14px;
-  background: #f8fafc;
+  background: var(--card-soft);
   text-align: left;
   cursor: pointer;
   display: flex;
@@ -305,7 +325,7 @@ a {
   width: 100%;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: #f9fafb;
+  background: var(--card-soft);
   padding: 12px 14px;
   text-align: left;
   font-weight: 500;
@@ -344,12 +364,17 @@ a {
 }
 
 .topic-pill {
-  background: #eef2ff;
-  color: var(--primary-dark);
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   padding: 8px 16px;
+}
+
+[data-theme='dark'] .topic-pill {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary);
 }
 
 .topic-meta {
@@ -382,7 +407,7 @@ a {
   border-radius: 16px;
   border: 1px solid var(--border);
   padding: 12px 16px;
-  background: #f8fafc;
+  background: var(--card-soft);
 }
 
 .bubble.client {
@@ -440,7 +465,7 @@ a {
 }
 
 .composer textarea:disabled {
-  background: #f1f5f9;
+  background: var(--card-soft);
   color: #94a3b8;
 }
 
@@ -471,7 +496,7 @@ a {
 
 .secondary-btn {
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
 }
 
@@ -524,6 +549,40 @@ a {
 
 #supportReset {
   width: 100%;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px var(--shadow);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.theme-icon {
+  display: block;
+  line-height: 1;
 }
 
 @media (max-width: 960px) {
